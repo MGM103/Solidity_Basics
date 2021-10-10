@@ -1,6 +1,8 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-contract ZombieFactory {
+import "./Ownable.sol";
+
+contract ZombieFactory is Ownable{
     // defining event, events allow our contract to communicate to the front end
     event NewZombie(uint zombieId, string name, uint dna);
     
@@ -10,10 +12,15 @@ contract ZombieFactory {
     
     //** = to the power of
     uint dnaModulus = 10 ** dnaDigits;
+    
+    //unix time stamp for 1 day in seconds
+    uint cooldownTime = 1 days;
 
     struct Zombie {
         string name;
         uint dna;
+        uint32 level;
+        uint32 readyTime;
     }
     
     //arrays can be fixed or dynamic(leave size blank)
@@ -30,7 +37,7 @@ contract ZombieFactory {
     //private functions start with a "_", only functions in the same contract can call private functions
     //interal allows contracts that inherit or functions in the same contract to use the function
     function _createZombie(string memory _name, uint _dna) internal {
-        uint id = zombies.push(Zombie(_name, _dna)) - 1;
+        uint id = zombies.push(Zombie(_name, _dna, 1, uint32(now + cooldownTime))) - 1;
         
         //msg.sender is a way to access the wallet address of caller
         zombieToOwner[id] = msg.sender;
