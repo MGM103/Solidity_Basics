@@ -4,7 +4,7 @@ contract ZombieFactory {
     // defining event, events allow our contract to communicate to the front end
     event NewZombie(uint zombieId, string name, uint dna);
     
-    //state variables are written to the blockchain
+    //state variables are written to the blockchain, storage keyword implied
     //uint short for unint128
     uint dnaDigits = 16;
     
@@ -20,12 +20,22 @@ contract ZombieFactory {
     //declaring array as public results in automatic getter method for array
     Zombie[] public zombies;
     
+    //mapping is a key value store mechanism
+    mapping (uint => address) public zombieToOwner;
+    mapping (address => uint) ownerZombieCount;
+    
     //"_" is used at the front of variables in function definitions, to differentiate them from global variables
     //the key word memory is used for variables that are parsed as a reference
     //functions are public by default
     //private functions start with a "_", only functions in the same contract can call private functions
-    function _createZombie(string memory _name, uint _dna) private {
+    //interal allows contracts that inherit or functions in the same contract to use the function
+    function _createZombie(string memory _name, uint _dna) internal {
         uint id = zombies.push(Zombie(_name, _dna)) - 1;
+        
+        //msg.sender is a way to access the wallet address of caller
+        zombieToOwner[id] = msg.sender;
+        ownerZombieCount[msg.sender]++;
+        
         emit NewZombie(id, _name, _dna); //trigger event
     }
     
@@ -39,6 +49,8 @@ contract ZombieFactory {
     }
     
     function createRandomZombie(string memory _name) public {
+        //Check this is the first zombie user is creating
+        require(ownerZombieCount[msg.sender] == 0);
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);
     }
