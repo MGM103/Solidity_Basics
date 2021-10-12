@@ -3,6 +3,10 @@ pragma solidity >=0.5.0 <0.6.0;
 import "./Ownable.sol";
 
 contract ZombieFactory is Ownable{
+    using SafeMath for uint256;
+    using SafeMath32 for uint32;
+    using SafeMath16 for uint16;
+    
     // defining event, events allow our contract to communicate to the front end
     event NewZombie(uint zombieId, string name, uint dna);
     
@@ -43,7 +47,7 @@ contract ZombieFactory is Ownable{
         
         //msg.sender is a way to access the wallet address of caller
         zombieToOwner[id] = msg.sender;
-        ownerZombieCount[msg.sender]++;
+        ownerZombieCount[msg.sender] = ownerZombieCount[msg.sender].add(1);
         
         emit NewZombie(id, _name, _dna); //trigger event
     }
