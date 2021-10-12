@@ -21,6 +21,8 @@ contract ZombieFactory is Ownable{
         uint dna;
         uint32 level;
         uint32 readyTime;
+        uint16 winCount;
+        uint16 lossCount;
     }
     
     //arrays can be fixed or dynamic(leave size blank)
@@ -37,7 +39,7 @@ contract ZombieFactory is Ownable{
     //private functions start with a "_", only functions in the same contract can call private functions
     //interal allows contracts that inherit or functions in the same contract to use the function
     function _createZombie(string memory _name, uint _dna) internal {
-        uint id = zombies.push(Zombie(_name, _dna, 1, uint32(now + cooldownTime))) - 1;
+        uint id = zombies.push(Zombie(_name, _dna, 1, uint32(now + cooldownTime), 0, 0)) - 1;
         
         //msg.sender is a way to access the wallet address of caller
         zombieToOwner[id] = msg.sender;
