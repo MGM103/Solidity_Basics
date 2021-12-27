@@ -8,5 +8,5 @@ Generative NFT Project:
 - A generative NFT project where NFTs are created and stored on-chain using base64 encoding and SVGs
 - A front end is provided to allow users to mint NFTs and display the availability of the mint
 
-Skirmisher:
+Skirmishers:
 - A NFT turn based game
