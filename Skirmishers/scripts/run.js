@@ -37,10 +37,10 @@ async function main() {
   //Create the two characters
   txn = await skirmisherContract.createSkirmisher(muskBotID);
   await txn.wait();
-  txn = await skirmisherContract.createSkirmisher(dwellerID);
-  await txn.wait();
 
   //ATTACK!!!
+  txn = await skirmisherContract.attackBoss();
+  await txn.wait();
   txn = await skirmisherContract.attackBoss();
   await txn.wait();
 

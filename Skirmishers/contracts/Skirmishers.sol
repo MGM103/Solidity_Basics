@@ -42,6 +42,10 @@ contract Skirmishers is ERC721 {
     //Mapping to reference the nfts of a given holder
     mapping(address => uint256) public owner2Skirmisher;
 
+    //Events to ensure our front end is aware of functions running to completion
+    event SkirmisherNFTMinted(address sender, uint256 newSkirmisherID, uint256 SkirmisherType);
+    event AttackCompleted(uint256 newPlayerHp, uint256 newEnemyHp);
+
     constructor(
         string[] memory _skirmisherNames,
         string[] memory _skirmisherImageURIs,
@@ -85,6 +89,21 @@ contract Skirmishers is ERC721 {
         _tokenID.increment();
     }
 
+    function checkPresenceNFT() public view returns(SkirmisherAttributes memory){
+        uint256 playerSkirmisherID = owner2Skirmisher[msg.sender];
+        
+        if(playerSkirmisherID > 0){
+            return ID2Attributes[playerSkirmisherID];
+        }else{
+            SkirmisherAttributes memory emptySkirmisher;
+            return emptySkirmisher;
+        }
+    }
+
+    function getBaseSkirmishers() public view returns(SkirmisherAttributes[] memory){
+        return skirmisherTypes;
+    }
+
     function createSkirmisher(uint256 _skirmisherType) external {
         //Get currentID
         uint256 newSkirmisherID = _tokenID.current();
@@ -107,24 +126,50 @@ contract Skirmishers is ERC721 {
         owner2Skirmisher[msg.sender] = newSkirmisherID;
 
         _tokenID.increment();
+
+        emit SkirmisherNFTMinted(msg.sender, newSkirmisherID, _skirmisherType);
+    }
+
+    function getBoss() public view returns(EnemyVariant memory){
+        return boss;
     }
 
     function attackBoss() public {
+        require(boss.hp > 0, "The boss has already been defeated");
+
         uint256 playerSkirmisherID = owner2Skirmisher[msg.sender];
         SkirmisherAttributes storage playerSkirmisher = ID2Attributes[playerSkirmisherID];
 
+        require(playerSkirmisher.hp > 0, "Your skirmisher has been defeated :(");
+
+        //Deal some damage
+        if(boss.hp < playerSkirmisher.damage){
+            boss.hp = 0;
+        }else{
+            boss.hp = boss.hp - playerSkirmisher.damage;
+        }
+
+        //Talk shit get hit
+        if(playerSkirmisher.hp < boss.damage){
+            playerSkirmisher.hp = 0;
+        }else{
+            playerSkirmisher.hp = playerSkirmisher.hp - boss.damage;
+        }
+
         console.log(
-            "\nPlayer w/ character: %s is attacking! Current HP is %s and dmg dealt will be %s",
+            "\nPlayer w/ character: %s attacked! Current HP is now %s and dmg dealt was %s",
             playerSkirmisher.name,
             playerSkirmisher.hp,
             playerSkirmisher.damage
         );
         console.log(
-            "Boss %n is being attacked and has %s HP and will deal %s damage",
+            "Boss %s was attacked and now has %s HP and dealt %s damage",
             boss.name,
             boss.hp,
             boss.damage
         );
+
+        emit AttackCompleted(playerSkirmisher.hp, boss.hp);
     }
 
     function tokenURI(uint256 _tokenId) public view override returns (string memory) {
