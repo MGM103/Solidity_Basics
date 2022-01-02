@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import twitterLogo from './assets/twitter-logo.svg';
+import {ethers} from 'ethers'
+import Skirmishers from './utils/Skirmishers.json';
 
 //Components
 import SelectCharacter from './Components/SelectCharacter';
+
+//Variable imports
+import {CONTRACT_ADDRESS, transformSkirmisherData} from './constants.js';
 
 // Constants
 const TWITTER_HANDLE = '_buildspace';
@@ -13,6 +18,18 @@ const App = () => {
   // State
   const [currentAccount, setCurrentAccount] = useState(null);
   const [skirmisherNFT, setSkirmisherNFT] = useState(null);
+
+  const checkNetwork = async () => {
+    try { 
+      if (window.ethereum.networkVersion !== '4') {
+        alert("Please connect to Rinkeby!")
+      }else{
+        console.log("Connected to the correct network!");
+      }
+    } catch(error) {
+      console.log(error)
+    }
+  }
 
   // Actions
   const checkIfWalletIsConnected = async () => {
@@ -96,8 +113,44 @@ const App = () => {
   };
 
   useEffect(() => {
+    checkNetwork();
+  })
+  useEffect(() => {
     checkIfWalletIsConnected();
   }, []);
+  useEffect(() => {
+    /*
+    * The function we will call that interacts with out smart contract
+    */
+    const fetchNFTMetadata = async () => {
+      console.log('Checking for Character NFT on address:', currentAccount);
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const skirmisherContract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        Skirmishers.abi,
+        signer
+      );
+
+      const txn = await skirmisherContract.checkPresenceNFT();
+      if (txn.name) {
+        console.log('User has character NFT');
+        console.log(txn);
+        setSkirmisherNFT(transformSkirmisherData(txn));
+      } else {
+        console.log('No character NFT found');
+      }
+    };
+
+    /*
+    * We only want to run this, if we have a connected wallet
+    */
+    if (currentAccount) {
+      console.log('CurrentAccount:', currentAccount);
+      fetchNFTMetadata();
+    }
+  }, [currentAccount]);
 
   return (
     <div className="App">
