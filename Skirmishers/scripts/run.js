@@ -38,6 +38,9 @@ async function main() {
   txn = await skirmisherContract.createSkirmisher(muskBotID);
   await txn.wait();
 
+  let URITx = await skirmisherContract.tokenURI(1);
+  console.log(URITx);
+
   //ATTACK!!!
   txn = await skirmisherContract.attackBoss();
   await txn.wait();

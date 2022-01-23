@@ -3,9 +3,11 @@ import './App.css';
 import twitterLogo from './assets/twitter-logo.svg';
 import {ethers} from 'ethers'
 import Skirmishers from './utils/Skirmishers.json';
+import LoadingIndicator from './Components/LoadingIndicator';
 
 //Components
 import SelectCharacter from './Components/SelectCharacter';
+import Arena from './Components/Arena';
 
 //Variable imports
 import {CONTRACT_ADDRESS, transformSkirmisherData} from './constants.js';
@@ -18,6 +20,7 @@ const App = () => {
   // State
   const [currentAccount, setCurrentAccount] = useState(null);
   const [skirmisherNFT, setSkirmisherNFT] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const checkNetwork = async () => {
     try { 
@@ -38,6 +41,7 @@ const App = () => {
 
       if (!ethereum) {
         console.log('Make sure you have MetaMask!');
+        setIsLoading(false);
         return;
       } else {
         console.log('We have the ethereum object', ethereum);
@@ -55,6 +59,8 @@ const App = () => {
     } catch (error) {
       console.log(error);
     }
+
+    setIsLoading(false);
   };
 
   /*
@@ -88,6 +94,11 @@ const App = () => {
 
   // Render Methods
   const renderContent = () => {
+    //Loading indicator for when we are waiting for a response from contract
+    if(isLoading){
+      <LoadingIndicator />
+    }
+
     //Scenario 1, user is not connected/authenticated
     if (!currentAccount) {
       return (
@@ -108,7 +119,9 @@ const App = () => {
       * Scenario #2
       */
     }else if(currentAccount && !skirmisherNFT){
-      return <SelectCharacter setSkirmisherrNFT={setSkirmisherNFT} />;
+      return <SelectCharacter setSkirmisherNFT={setSkirmisherNFT} />;
+    }else if(currentAccount && skirmisherNFT){
+      return <Arena skirmisherNFT={skirmisherNFT} setSkirmisherNFT={setSkirmisherNFT}/>;
     }
   };
 
@@ -116,6 +129,7 @@ const App = () => {
     checkNetwork();
   })
   useEffect(() => {
+    setIsLoading(true);
     checkIfWalletIsConnected();
   }, []);
   useEffect(() => {
@@ -141,6 +155,8 @@ const App = () => {
       } else {
         console.log('No character NFT found');
       }
+
+      setIsLoading(false);
     };
 
     /*

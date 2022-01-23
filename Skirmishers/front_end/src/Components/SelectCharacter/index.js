@@ -3,23 +3,28 @@ import './SelectCharacter.css';
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESS, transformSkirmisherData } from '../../constants.js';
 import Skirmishers from '../../utils/Skirmishers.json';
+import LoadingIndicator from '../LoadingIndicator';
 
 const SelectSkirmisher = ({ setSkirmisherNFT }) => {
   
   const [skirmishers, setSkirmishers] = useState([]);
   const [skirmisherContract, setSkirmisherContract] = useState(null);
+  const [mintingSkirmisher, setMintingSkirmisher] = useState(false);
 
   // Actions
   const mintSkirmisherNFTAction = (id) => async () => {
     try {
       if (skirmisherContract) {
         console.log('Minting character in progress...');
+        setMintingSkirmisher(true);
         const mintTxn = await skirmisherContract.createSkirmisher(id);
         await mintTxn.wait();
         console.log('mintTxn:', mintTxn);
+        setMintingSkirmisher(false);
       }
     } catch (error) {
       console.warn('MintCharacterAction Error:', error);
+      setMintingSkirmisher(false);
     }
   };
 
@@ -119,7 +124,7 @@ const SelectSkirmisher = ({ setSkirmisherNFT }) => {
       * When your component unmounts, let;s make sure to clean up this listener
       */
       if (skirmisherContract) {
-        skirmisherContract.off('skirmisherNFTMinted', onSkirmisherMint);
+        skirmisherContract.off('SkirmisherNFTMinted', onSkirmisherMint);
       }
     };
   }, [skirmisherContract]);
@@ -130,6 +135,19 @@ const SelectSkirmisher = ({ setSkirmisherNFT }) => {
       {/* Only show this when there are characters in state */}
       {skirmishers.length > 0 && (
         <div className="character-grid">{renderSkirmishers()}</div>
+      )}
+      {/* Only show our loading state if mintingCharacter is true */}
+      {mintingSkirmisher && (
+        <div className="loading">
+          <div className="indicator">
+            <LoadingIndicator />
+            <p>Minting In Progress...</p>
+          </div>
+          <img
+            src="https://media2.giphy.com/media/61tYloUgq1eOk/giphy.gif?cid=ecf05e47dg95zbpabxhmhaksvoy8h526f96k4em0ndvx078s&rid=giphy.gif&ct=g"
+            alt="Minting loading indicator"
+          />
+        </div>
       )}
     </div>
   );

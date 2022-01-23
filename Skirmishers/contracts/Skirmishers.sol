@@ -82,7 +82,12 @@ contract Skirmishers is ERC721 {
             );
 
             SkirmisherAttributes memory skirmisher = skirmisherTypes[i];
-            console.log("Created skirmisher %s with health %s HP and img %s", skirmisher.name, skirmisher.hp, skirmisher.imageURI);
+            console.log(
+                "Created skirmisher %s with health %s HP and img %s", 
+                skirmisher.name, 
+                skirmisher.hp, 
+                skirmisher.imageURI
+            );
         }
 
         //Incremented on instantiation to ensure that the first NFT has ID 1 not 0
